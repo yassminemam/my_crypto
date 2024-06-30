@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:my_crypto/app_router.dart';
 import 'package:my_crypto/core/theme/text_styles.dart';
-import '../../../../data/model/user_holding/user_holding.dart';
-import '../../add_holding/notifier/add_holding_state_notifier.dart';
+import '../../../../../core/util/tools.dart';
+import '../../../widgets/input_widget.dart';
 import '../notifier/home_notifier.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,29 +23,12 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late final List<UserHolding> _allUserHoldings = [];
-  bool _lastDeleted = false;
+  final FocusNode _nodeEditHoldingQun = FocusNode();
+  final TextEditingController _editHoldingQunCon = TextEditingController();
 
   Future<void> _onRefresh() async {
     final Completer<void> completer = Completer<void>();
-    setState(() {
-      final userNewHolding =
-          ref.read(addHoldingPageStateProvider.notifier).getUserNewHolding();
-      if (!_allUserHoldings.contains(userNewHolding) && !_lastDeleted) {
-        _allUserHoldings.add(userNewHolding);
-      }
-    });
-    List<String> symbols = [];
-    for (var holding in _allUserHoldings) {
-      symbols.add(holding.symbol ?? "");
-    }
-    await ref
-        .read(homePageStateProvider.notifier)
-        .fetchCoinsPrices(symbols)
-        .then((v) {
-      completer.complete();
-    });
-
+    completer.complete();
     return completer.future.then<void>((_) {
       ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
         const SnackBar(
@@ -54,6 +40,17 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void initState() {
+    Hive.openBox('userHoldings').then((userHoldingsBox) {
+      List<String> symbols = [];
+      for (int x = 0; x < userHoldingsBox.length; x++) {
+        symbols.add(userHoldingsBox.getAt(x).symbol ?? "");
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await ref
+            .read(homePageStateProvider.notifier)
+            .fetchCoinsPrices(symbols);
+      });
+    });
     super.initState();
   }
 
@@ -110,112 +107,185 @@ class _HomePageState extends ConsumerState<HomePage> {
                   height: 20.h,
                 ),
                 SizedBox(
-                  height: maxHeightConstr - 100.h,
-                  child: ListView.builder(
-                    itemCount: _allUserHoldings.length,
-                    itemBuilder: (context, position) {
-                      String symbol =
-                          _allUserHoldings[position].symbol ?? "null";
-                      return SizedBox(
-                          height: 120.h,
-                          width: maxWidthConstr - 40,
-                          child: Slidable(
-                            key: ValueKey(position),
-                            endActionPane: ActionPane(
-                              motion: const ScrollMotion(),
-                              children: [
-                                SlidableAction(
-                                  onPressed: (c) => setState(() {
-                                    _allUserHoldings.removeAt(position);
-                                    if (position ==
-                                        (_allUserHoldings.length - 1)) {
-                                      _lastDeleted = true;
-                                    }
-                                  }),
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.delete,
-                                ),
-                                SlidableAction(
-                                  onPressed: (c) {},
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.edit,
-                                ),
-                              ],
-                            ),
-                            child: Consumer(
-                              builder: (BuildContext context, WidgetRef ref,
-                                  Widget? child) {
-                                final homeProv =
-                                    ref.watch(homePageStateProvider);
-                                final coinsPricesMap =
-                                    homeProv.coinPriceResponse?.prices ?? {};
-                                return Container(
-                                  height: 120.h,
-                                  width: maxWidthConstr.w - 40,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 10.h, horizontal: 10.w),
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 5.h, horizontal: 5.w),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black12,
-                                    border: Border.all(
-                                        color: Colors.black12, width: 2.0),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(
-                                            5.0) //                 <--- border radius here
-                                        ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                    height: maxHeightConstr - 100.h,
+                    child: ValueListenableBuilder(
+                      valueListenable: Hive.box('userHoldings').listenable(),
+                      builder: (context, allUserHoldingsBox, widget) {
+                        return ListView.builder(
+                          itemCount: allUserHoldingsBox.length,
+                          itemBuilder: (context, position) {
+                            String symbol =
+                                allUserHoldingsBox.getAt(position).symbol ??
+                                    "null";
+                            return SizedBox(
+                                height: 120.h,
+                                width: maxWidthConstr - 40,
+                                child: Slidable(
+                                  key: ValueKey(position),
+                                  endActionPane: ActionPane(
+                                    motion: const ScrollMotion(),
                                     children: [
-                                      Text(
-                                        symbol,
-                                        textAlign: TextAlign.start,
-                                        style: AppTxtStyles.mainTxtStyle
-                                            .copyWith(fontSize: 14.sp),
+                                      SlidableAction(
+                                        onPressed: (c) => setState(() {
+                                          allUserHoldingsBox
+                                              .deleteAt(position);
+                                        }),
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.delete,
                                       ),
-                                      SizedBox(
-                                        height: 3.h,
-                                      ),
-                                      Text(
-                                        "Quantity: ${_allUserHoldings[position].quantity}",
-                                        textAlign: TextAlign.start,
-                                        style: AppTxtStyles
-                                            .size10Weight400TxtStyle
-                                            .copyWith(fontSize: 12.sp),
-                                      ),
-                                      SizedBox(
-                                        height: 3.h,
-                                      ),
-                                      Text(
-                                        "Current Price: \$ ${coinsPricesMap[symbol] ?? "null"}",
-                                        textAlign: TextAlign.start,
-                                        style: AppTxtStyles
-                                            .size10Weight400TxtStyle
-                                            .copyWith(fontSize: 12.sp),
-                                      ),
-                                      SizedBox(
-                                        height: 3.h,
-                                      ),
-                                      Text(
-                                        "Total: \$ ${(_allUserHoldings[position].quantity! * coinsPricesMap[symbol])}",
-                                        textAlign: TextAlign.start,
-                                        style: AppTxtStyles
-                                            .size10Weight400TxtStyle
-                                            .copyWith(fontSize: 12.sp),
+                                      SlidableAction(
+                                        onPressed: (c) async {
+                                          await showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Edit Quantity'),
+                                                  content: SizedBox(
+                                                      height: 30.h,
+                                                      child: KeyboardActions(
+                                                        config: Tools.buildConfig(
+                                                            context,
+                                                            _nodeEditHoldingQun),
+                                                        disableScroll: true,
+                                                        child: InputWidget(
+                                                          controller:
+                                                              _editHoldingQunCon,
+                                                          inputType:
+                                                              TextInputType
+                                                                  .number,
+                                                          focusNode:
+                                                              _nodeEditHoldingQun,
+                                                          inputFormatters: <TextInputFormatter>[
+                                                            FilteringTextInputFormatter
+                                                                .digitsOnly
+                                                          ],
+                                                          maxLines: 1,
+                                                          hint: "required *",
+                                                          onChanged: (t) {
+                                                            _editHoldingQunCon
+                                                                .text = t;
+                                                          },
+                                                          onDone: (t) {
+                                                            _editHoldingQunCon
+                                                                .text = t;
+                                                          },
+                                                        ),
+                                                      )),
+                                                  actions: [
+                                                    TextButton(
+                                                      child:
+                                                          const Text('Cancel'),
+                                                      onPressed: () {
+                                                        _editHoldingQunCon
+                                                            .clear();
+                                                        Navigator.pop(context);
+                                                      },
+                                                    ),
+                                                    TextButton(
+                                                      child: const Text('Done'),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          allUserHoldingsBox
+                                                              .getAt(position)
+                                                              .quantity =
+                                                              double.parse(
+                                                                  _editHoldingQunCon
+                                                                      .text);
+                                                          allUserHoldingsBox
+                                                              .getAt(position).save();
+                                                        });
+                                                        _editHoldingQunCon
+                                                            .clear();
+                                                        Navigator.pop(context);
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              });
+                                        },
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.edit,
                                       ),
                                     ],
                                   ),
-                                );
-                              },
-                            ),
-                          ));
-                    },
-                  ),
-                )
+                                  child: Consumer(
+                                    builder: (BuildContext context,
+                                        WidgetRef ref, Widget? child) {
+                                      final homeProv =
+                                          ref.watch(homePageStateProvider);
+                                      final coinsPricesMap =
+                                          homeProv.coinPriceResponse?.prices ??
+                                              {};
+                                      return Container(
+                                        height: 120.h,
+                                        width: maxWidthConstr.w - 40,
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: 10.h, horizontal: 10.w),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 5.h, horizontal: 5.w),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black12,
+                                          border: Border.all(
+                                              color: Colors.black12,
+                                              width: 2.0),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(
+                                                  5.0) //                 <--- border radius here
+                                              ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              symbol,
+                                              textAlign: TextAlign.start,
+                                              style: AppTxtStyles.mainTxtStyle
+                                                  .copyWith(fontSize: 14.sp),
+                                            ),
+                                            SizedBox(
+                                              height: 3.h,
+                                            ),
+                                            Text(
+                                              "Quantity: ${allUserHoldingsBox.getAt(position).quantity}",
+                                              textAlign: TextAlign.start,
+                                              style: AppTxtStyles
+                                                  .size10Weight400TxtStyle
+                                                  .copyWith(fontSize: 12.sp),
+                                            ),
+                                            SizedBox(
+                                              height: 3.h,
+                                            ),
+                                            Text(
+                                              "Current Price: \$ ${coinsPricesMap[symbol] ?? 0.0}",
+                                              textAlign: TextAlign.start,
+                                              style: AppTxtStyles
+                                                  .size10Weight400TxtStyle
+                                                  .copyWith(fontSize: 12.sp),
+                                            ),
+                                            SizedBox(
+                                              height: 3.h,
+                                            ),
+                                            Text(
+                                              "Total: \$ ${((allUserHoldingsBox.getAt(position).quantity) * (coinsPricesMap[symbol] ?? 0.0))}",
+                                              textAlign: TextAlign.start,
+                                              style: AppTxtStyles
+                                                  .size10Weight400TxtStyle
+                                                  .copyWith(fontSize: 12.sp),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ));
+                          },
+                        );
+                      },
+                    ))
               ],
             );
           }),

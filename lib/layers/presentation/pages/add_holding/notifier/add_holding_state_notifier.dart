@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'package:my_crypto/core/usecase/usecase.dart';
 import 'package:my_crypto/layers/data/model/user_holding/user_holding.dart';
 import '../../../../domain/usecase/get_coins_list/get_coins.dart';
@@ -42,6 +43,8 @@ class AddHoldingStateNotifier extends StateNotifier<AddHoldingPageState> {
         status: AddHoldingPageStatus.loading,
         coinsListResponse: state.coinsListResponse,
         userNewHolding: state.userNewHolding);
+    var box = await Hive.openBox('userHoldings');
+    box.add(newUserHolding);
     state = state.copyWith(
         status: AddHoldingPageStatus.success,
         userNewHolding: newUserHolding,

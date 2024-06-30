@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
+import 'package:my_crypto/app_router.dart';
 import 'package:my_crypto/core/theme/text_styles.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_crypto/layers/data/model/user_holding/user_holding.dart';
@@ -187,7 +188,8 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                               .read(addHoldingPageStateProvider
                                                   .notifier)
                                               .addNewHolding(_newUserHolding!);
-                                          context.go("/");
+                                          context.pop();
+                                          context.go("/$homeRoute");
                                         }
                                       },
                                     )),

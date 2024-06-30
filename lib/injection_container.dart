@@ -1,15 +1,14 @@
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive/hive.dart';
 import 'package:my_crypto/layers/data/datasource/coin_price/coin_price_remote_data_source.dart';
-import 'package:my_crypto/layers/domain/usecase/get_coins_list/get_coins.dart';
+import 'package:path_provider/path_provider.dart';
 import 'config/flavour_config.dart';
 import 'core/network/network_info.dart';
 import 'core/util/dio_logging_interceptor.dart';
 import 'layers/data/datasource/coins_list/coins_list_remote_data_source.dart';
-import 'layers/data/repo/coins_list/coins_repo_impl.dart';
-import 'layers/domain/repo/coins_list/coins_repo.dart';
-import 'layers/presentation/pages/add_holding/notifier/add_holding_state_notifier.dart';
+import 'layers/data/model/user_holding/user_holding.dart';
 
 final sl = GetIt.instance;
 
@@ -35,13 +34,19 @@ Future<void> init() async {
     dio.interceptors.add(LoggingInterceptor());
     return dio;
   });
-/*
-  sl.registerLazySingletonAsync<SharedPreferences>(() {
-    final sharedPref = SharedPreferences.getInstance();
-    return sharedPref;
+
+  sl.registerLazySingletonAsync<BoxCollection>(() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final collection = await BoxCollection.open(
+      'MyCryptoAppBox',
+      {'userHoldings'},
+      path: directory.path,
+    );
+    Hive.registerAdapter(UserHoldingAdapter());
+    return collection;
   });
-  await sl.isReady<SharedPreferences>();
-*/
+  await sl.isReady<BoxCollection>();
+
   /**
    * ! Layers
    */
@@ -50,19 +55,5 @@ Future<void> init() async {
       () => CoinsRemoteDataSourceImpl(dio: sl()));
 
   sl.registerLazySingleton<CoinPriceRemoteDataSource>(
-          () => CoinPriceRemoteDataSourceImpl(dio: sl()));
-/*
-  // Repository
-  sl.registerLazySingleton<CoinsRepository>(() => CoinsRepositoryImpl(
-        coinsRemoteDataSource: sl<CoinsRemoteDataSource>(),
-        networkInfo: sl<NetworkInfo>(),
-      ));
-
-  // Use Case
-  sl.registerLazySingleton(() => GetCoins(coinsRepository: sl()));
-
-  // Provider
-  sl.registerFactory<AddHoldingStateNotifier>(
-    () => AddHoldingStateNotifier(getAllCoins: sl()),
-  );*/
+      () => CoinPriceRemoteDataSourceImpl(dio: sl()));
 }
