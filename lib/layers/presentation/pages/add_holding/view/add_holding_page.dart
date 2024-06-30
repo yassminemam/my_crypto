@@ -28,6 +28,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
   UserHolding? _newUserHolding;
   String? _coinSymbol;
   int _selectedCoinPos = -1;
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +64,8 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                               AddHoldingPageStatus.failure) {
                             return Center(
                                 child: Text(
-                                addHoldingProv.error?.errorMessage ?? "Error",
+                              addHoldingProv.error?.errorMessage ??
+                                  AppStrings.errorUnknownError,
                               style: AppTxtStyles.btnTxtStyle
                                   .copyWith(color: Colors.red),
                             ));
@@ -76,14 +78,14 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Text(
-                                "Add New Holding",
+                                AppStrings.addNewHoldingHeader,
                                 style: AppTxtStyles.mainTxtStyle,
                               ),
                               SizedBox(
                                 height: 20.h,
                               ),
                               Text(
-                                "Scroll the list and choose your holding:",
+                                AppStrings.chooseYourHolding,
                                 style: AppTxtStyles.btnTxtStyle
                                     .copyWith(color: Colors.black),
                                 textAlign: TextAlign.start,
@@ -102,7 +104,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                           _selectedCoinPos = position;
                                           _coinSymbol =
                                               coinsList?[position].symbol ??
-                                                  "null symbol";
+                                                  AppStrings.nullSymbol;
                                         });
                                       },
                                       child: Card(
@@ -114,7 +116,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                               vertical: 10.0.h),
                                           child: Text(
                                             coinsList?[position].symbol ??
-                                                "null symbol",
+                                                AppStrings.nullSymbol,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(fontSize: 14.0.sp),
                                           ),
@@ -128,7 +130,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                 height: 20.h,
                               ),
                               Text(
-                                "Add your quantity",
+                                AppStrings.addYourQuantity,
                                 style: AppTxtStyles.btnTxtStyle
                                     .copyWith(color: Colors.black),
                                 textAlign: TextAlign.start,
@@ -151,7 +153,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                         FilteringTextInputFormatter.digitsOnly
                                       ],
                                       maxLines: 1,
-                                      hint: "required *",
+                                      hint: AppStrings.hintRequired,
                                       onChanged: (t) {
                                         _holdingQuantityCon.text = t;
                                       },
@@ -171,7 +173,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                 child: Align(
                                     alignment: Alignment.bottomCenter,
                                     child: ButtonPrimaryWidget(
-                                      "Add New Holding",
+                                      AppStrings.addNewHoldingHeader,
                                       height: 40.h,
                                       color: Colors.blueAccent,
                                       onTap: () {
@@ -180,16 +182,25 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                                           Tools.showHintMsg(AppStrings
                                               .pleaseEnterAllTheRequiredData);
                                         } else {
-                                          _newUserHolding = UserHolding(
-                                              quantity: double.parse(
-                                                  _holdingQuantityCon.text),
-                                              symbol: _coinSymbol);
-                                          ref
-                                              .read(addHoldingPageStateProvider
-                                                  .notifier)
-                                              .addNewHolding(_newUserHolding!);
-                                          context.pop();
-                                          context.go("/$homeRoute");
+                                          if (double.parse(
+                                                  _holdingQuantityCon.text) <=
+                                              0) {
+                                            Tools.showErrorMessage(AppStrings
+                                                .pleaseEnterQuantityGreaterThanZero);
+                                          } else {
+                                            _newUserHolding = UserHolding(
+                                                quantity: double.parse(
+                                                    _holdingQuantityCon.text),
+                                                symbol: _coinSymbol);
+                                            ref
+                                                .read(
+                                                    addHoldingPageStateProvider
+                                                        .notifier)
+                                                .addNewHolding(
+                                                    _newUserHolding!);
+                                            context.pop();
+                                            context.go("/$homeRoute");
+                                          }
                                         }
                                       },
                                     )),

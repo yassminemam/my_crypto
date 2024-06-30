@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import '../../../../../injection_container.dart';
+import 'package:my_crypto/core/constants/strings/app_strings.dart';
 import '../../../../domain/usecase/get_coin_price/get_coin_price.dart';
 import '../../../providers.dart';
 import 'home_state.dart';
@@ -22,24 +22,27 @@ class HomeStateNotifier extends StateNotifier<HomePageState> {
 
   Future<void> fetchCoinsPrices() async {
     state = state.copyWith(status: HomePageStatus.loading);
-    await Hive.openBox('userHoldings').then((userHoldingsBox) async {
+    await Hive.openBox(AppStrings.userHoldingsBox).then((userHoldingsBox) async {
       List<String> symbols = [];
       for (int x = 0; x < userHoldingsBox.length; x++) {
         symbols.add(userHoldingsBox.getAt(x).symbol ?? "");
       }
-      await _getAllCoinsPrices.call(symbols).then((result) {
-        result.fold((l) {
-          state = state.copyWith(
-            status: HomePageStatus.failure,
-            error: l,
-          );
-        }, (r) {
-          state = state.copyWith(
-            status: HomePageStatus.success,
-            coinPriceResponse: r,
-          );
-        });
-      });
+      if(symbols.isNotEmpty)
+        {
+          await _getAllCoinsPrices.call(symbols).then((result) {
+            result.fold((l) {
+              state = state.copyWith(
+                status: HomePageStatus.failure,
+                error: l,
+              );
+            }, (r) {
+              state = state.copyWith(
+                status: HomePageStatus.success,
+                coinPriceResponse: r,
+              );
+            });
+          });
+        }
     });
   }
 }

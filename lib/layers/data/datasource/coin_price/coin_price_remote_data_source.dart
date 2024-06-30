@@ -21,7 +21,7 @@ class CoinPriceRemoteDataSourceImpl implements CoinPriceRemoteDataSource {
   @override
   Future<CoinPriceResponse?> getCoinPrice({required List<String> coinSymbol}) async {
     try {
-      Map<String, dynamic>? queryParams = {"fsym": "USD", "tsyms": coinSymbol};
+      Map<String, dynamic>? queryParams = {"api_key": AppStrings.apiKey, "fsym": "USD", "tsyms": coinSymbol};
       var response =
           await dio.get(EndPoints.getPrice, queryParameters: queryParams);
       if (response.statusCode == 200) {

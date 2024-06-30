@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:my_crypto/app_router.dart';
+import 'package:my_crypto/core/constants/strings/app_strings.dart';
 import 'package:my_crypto/core/theme/text_styles.dart';
 import 'package:my_crypto/layers/presentation/pages/home/notifier/home_state.dart';
 import '../../../../../core/util/tools.dart';
@@ -40,7 +41,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return completer.future.then<void>((_) {
       ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
         const SnackBar(
-          content: Text('Refresh complete'),
+          content: Text(AppStrings.refreshComplete),
         ),
       );
     });
@@ -90,7 +91,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     children: [
                       Expanded(
                           child: Text(
-                        "Crypto Portfolio",
+                        AppStrings.cryptoPortfolio,
                         style: AppTxtStyles.mainTxtStyle,
                       )),
                       TextButton(
@@ -106,7 +107,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           context.go('/$addHolding');
                         },
                         child: Text(
-                          '+ Add New Holding',
+                          AppStrings.addHolding,
                           style:
                               AppTxtStyles.btnTxtStyle.copyWith(fontSize: 12),
                         ),
@@ -126,7 +127,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     if (homeProv.status == HomePageStatus.failure) {
                       return Center(
                           child: Text(
-                        homeProv.error?.errorMessage ?? "Error",
+                        homeProv.error?.errorMessage ??
+                            AppStrings.errorUnknownError,
                         style: AppTxtStyles.btnTxtStyle
                             .copyWith(color: Colors.red),
                       ));
@@ -136,14 +138,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   return SizedBox(
                       height: maxHeightConstr - 100.h,
                       child: ValueListenableBuilder(
-                        valueListenable: Hive.box('userHoldings').listenable(),
+                        valueListenable:
+                            Hive.box(AppStrings.userHoldingsBox).listenable(),
                         builder: (context, allUserHoldingsBox, widget) {
                           return ListView.builder(
                             itemCount: allUserHoldingsBox.length,
                             itemBuilder: (context, position) {
                               String symbol =
                                   allUserHoldingsBox.getAt(position).symbol ??
-                                      "null";
+                                      AppStrings.nullSymbol;
                               return SizedBox(
                                   height: 120.h,
                                   width: maxWidthConstr - 40,
@@ -167,8 +170,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                 context: context,
                                                 builder: (context) {
                                                   return AlertDialog(
-                                                    title: const Text(
-                                                        'Edit Quantity'),
+                                                    title: const Text(AppStrings
+                                                        .editQuantity),
                                                     content: SizedBox(
                                                         height: 30.h,
                                                         child: KeyboardActions(
@@ -189,11 +192,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                                   .digitsOnly
                                                             ],
                                                             maxLines: 1,
-                                                            hint: "required *",
                                                             onChanged: (t) {
                                                               _editHoldingQunCon
                                                                   .text = t;
                                                             },
+                                                            hint: AppStrings.hintRequired,
                                                             onDone: (t) {
                                                               _editHoldingQunCon
                                                                   .text = t;
@@ -203,7 +206,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                     actions: [
                                                       TextButton(
                                                         child: const Text(
-                                                            'Cancel'),
+                                                            AppStrings.cancel),
                                                         onPressed: () {
                                                           _editHoldingQunCon
                                                               .clear();
@@ -212,22 +215,39 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                         },
                                                       ),
                                                       TextButton(
-                                                        child:
-                                                            const Text('Done'),
+                                                        child: const Text(
+                                                            AppStrings.done),
                                                         onPressed: () {
-                                                          setState(() {
-                                                            allUserHoldingsBox
-                                                                    .getAt(position)
-                                                                    .quantity =
-                                                                double.parse(
+                                                          if (_editHoldingQunCon
+                                                              .text
+                                                              .isNotEmpty) {
+                                                            if (double.parse(
                                                                     _editHoldingQunCon
-                                                                        .text);
-                                                            allUserHoldingsBox
-                                                                .getAt(position)
-                                                                .save();
-                                                          });
-                                                          _editHoldingQunCon
-                                                              .clear();
+                                                                        .text) >
+                                                                0) {
+                                                              setState(() {
+                                                                allUserHoldingsBox
+                                                                        .getAt(
+                                                                            position)
+                                                                        .quantity =
+                                                                    double.parse(
+                                                                        _editHoldingQunCon
+                                                                            .text);
+                                                                allUserHoldingsBox
+                                                                    .getAt(
+                                                                        position)
+                                                                    .save();
+                                                              });
+                                                              _editHoldingQunCon
+                                                                  .clear();
+                                                            }
+                                                            else
+                                                              {
+                                                                _editHoldingQunCon
+                                                                    .clear();
+                                                                Tools.showErrorMessage(AppStrings.pleaseEnterQuantityGreaterThanZero);
+                                                              }
+                                                          }
                                                           Navigator.pop(
                                                               context);
                                                         },
@@ -272,7 +292,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             height: 3.h,
                                           ),
                                           Text(
-                                            "Quantity: ${allUserHoldingsBox.getAt(position).quantity}",
+                                            "${AppStrings.quantity} ${allUserHoldingsBox.getAt(position).quantity}",
                                             textAlign: TextAlign.start,
                                             style: AppTxtStyles
                                                 .size10Weight400TxtStyle
@@ -282,7 +302,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             height: 3.h,
                                           ),
                                           Text(
-                                            "Current Price: \$ ${coinsPricesMap[symbol] ?? 0.0}",
+                                            "${AppStrings.currentPrice} \$ ${coinsPricesMap[symbol] ?? 0.0}",
                                             textAlign: TextAlign.start,
                                             style: AppTxtStyles
                                                 .size10Weight400TxtStyle
@@ -292,7 +312,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             height: 3.h,
                                           ),
                                           Text(
-                                            "Total: \$ ${((allUserHoldingsBox.getAt(position).quantity) * (coinsPricesMap[symbol] ?? 0.0))}",
+                                            "${AppStrings.total} \$ ${((allUserHoldingsBox.getAt(position).quantity) * (coinsPricesMap[symbol] ?? 0.0))}",
                                             textAlign: TextAlign.start,
                                             style: AppTxtStyles
                                                 .size10Weight400TxtStyle

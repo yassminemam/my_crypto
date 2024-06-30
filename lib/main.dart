@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'core/constants/colors/app_colors.dart';
@@ -12,12 +13,13 @@ import 'core/util/tools.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   FlavorConfig(
     flavor: Flavor.DEVELOPMENT,
     values: FlavorValues(baseUrl: BaseUrlConfig().baseUrlDevelopment),
   );
   await di.init();
-  Hive.openBox('userHoldings');
   await ScreenUtil.ensureScreenSize();
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -35,12 +37,11 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           brightness: Brightness.light,
-          colorScheme:
-          const ColorScheme.light(primary: AppColors.appMainColor),
+          colorScheme: const ColorScheme.light(primary: AppColors.appMainColor),
           unselectedWidgetColor: AppColors.color_C3C5C8,
         ),
         routerConfig:
-        GoRouter(routes: allRouts, navigatorKey: Tools.navigatorKey),
+            GoRouter(routes: allRouts, navigatorKey: Tools.navigatorKey),
       ),
     );
   }
