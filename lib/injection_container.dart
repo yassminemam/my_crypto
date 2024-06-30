@@ -1,6 +1,7 @@
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:my_crypto/layers/data/datasource/coin_price/coin_price_remote_data_source.dart';
 import 'package:my_crypto/layers/domain/usecase/get_coins_list/get_coins.dart';
 import 'config/flavour_config.dart';
 import 'core/network/network_info.dart';
@@ -48,6 +49,9 @@ Future<void> init() async {
   sl.registerLazySingleton<CoinsRemoteDataSource>(
       () => CoinsRemoteDataSourceImpl(dio: sl()));
 
+  sl.registerLazySingleton<CoinPriceRemoteDataSource>(
+          () => CoinPriceRemoteDataSourceImpl(dio: sl()));
+/*
   // Repository
   sl.registerLazySingleton<CoinsRepository>(() => CoinsRepositoryImpl(
         coinsRemoteDataSource: sl<CoinsRemoteDataSource>(),
@@ -60,5 +64,5 @@ Future<void> init() async {
   // Provider
   sl.registerFactory<AddHoldingStateNotifier>(
     () => AddHoldingStateNotifier(getAllCoins: sl()),
-  );
+  );*/
 }

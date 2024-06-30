@@ -11,11 +11,6 @@ final addHoldingPageStateProvider =
     getAllCoins: ref.read(getAllCoinsProvider),
   ),
 );
-final holdingPageFutureProv = FutureProvider((ref) {
-  {
-    return ref.watch(coinsRepositoryProvider).getCoinsList();
-  }
-});
 
 class AddHoldingStateNotifier extends StateNotifier<AddHoldingPageState> {
   AddHoldingStateNotifier({

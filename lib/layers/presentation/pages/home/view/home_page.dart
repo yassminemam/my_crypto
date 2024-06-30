@@ -9,6 +9,7 @@ import 'package:my_crypto/app_router.dart';
 import 'package:my_crypto/core/theme/text_styles.dart';
 import '../../../../data/model/user_holding/user_holding.dart';
 import '../../add_holding/notifier/add_holding_state_notifier.dart';
+import '../notifier/home_notifier.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,9 +25,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _onRefresh() async {
     final Completer<void> completer = Completer<void>();
-    Timer(const Duration(seconds: 1), () {
-      completer.complete();
-    });
     setState(() {
       final userNewHolding =
           ref.read(addHoldingPageStateProvider.notifier).getUserNewHolding();
@@ -34,6 +32,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         _allUserHoldings.add(userNewHolding);
       }
     });
+    List<String> symbols = [];
+    for (var holding in _allUserHoldings) {
+      symbols.add(holding.symbol ?? "");
+    }
+    await ref
+        .read(homePageStateProvider.notifier)
+        .fetchCoinsPrices(symbols)
+        .then((v) {
+      completer.complete();
+    });
+
     return completer.future.then<void>((_) {
       ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
         const SnackBar(
@@ -105,6 +114,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   child: ListView.builder(
                     itemCount: _allUserHoldings.length,
                     itemBuilder: (context, position) {
+                      String symbol =
+                          _allUserHoldings[position].symbol ?? "null";
                       return SizedBox(
                           height: 120.h,
                           width: maxWidthConstr - 40,
@@ -133,61 +144,73 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ),
                               ],
                             ),
-                            child: Container(
-                              height: 120.h,
-                              width: maxWidthConstr.w - 40,
-                              margin: EdgeInsets.symmetric(
-                                  vertical: 10.h, horizontal: 10.w),
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 5.h, horizontal: 5.w),
-                              decoration: BoxDecoration(
-                                color: Colors.black12,
-                                border: Border.all(
-                                    color: Colors.black12, width: 2.0),
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(
-                                        5.0) //                 <--- border radius here
-                                    ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _allUserHoldings[position].symbol ??
-                                        "null symbol",
-                                    textAlign: TextAlign.start,
-                                    style: AppTxtStyles.mainTxtStyle
-                                        .copyWith(fontSize: 14.sp),
+                            child: Consumer(
+                              builder: (BuildContext context, WidgetRef ref,
+                                  Widget? child) {
+                                final homeProv =
+                                    ref.watch(homePageStateProvider);
+                                final coinsPricesMap =
+                                    homeProv.coinPriceResponse?.prices ?? {};
+                                return Container(
+                                  height: 120.h,
+                                  width: maxWidthConstr.w - 40,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 10.h, horizontal: 10.w),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 5.h, horizontal: 5.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black12,
+                                    border: Border.all(
+                                        color: Colors.black12, width: 2.0),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(
+                                            5.0) //                 <--- border radius here
+                                        ),
                                   ),
-                                  SizedBox(
-                                    height: 3.h,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        symbol,
+                                        textAlign: TextAlign.start,
+                                        style: AppTxtStyles.mainTxtStyle
+                                            .copyWith(fontSize: 14.sp),
+                                      ),
+                                      SizedBox(
+                                        height: 3.h,
+                                      ),
+                                      Text(
+                                        "Quantity: ${_allUserHoldings[position].quantity}",
+                                        textAlign: TextAlign.start,
+                                        style: AppTxtStyles
+                                            .size10Weight400TxtStyle
+                                            .copyWith(fontSize: 12.sp),
+                                      ),
+                                      SizedBox(
+                                        height: 3.h,
+                                      ),
+                                      Text(
+                                        "Current Price: \$ ${coinsPricesMap[symbol] ?? "null"}",
+                                        textAlign: TextAlign.start,
+                                        style: AppTxtStyles
+                                            .size10Weight400TxtStyle
+                                            .copyWith(fontSize: 12.sp),
+                                      ),
+                                      SizedBox(
+                                        height: 3.h,
+                                      ),
+                                      Text(
+                                        "Total: \$ ${(_allUserHoldings[position].quantity! * coinsPricesMap[symbol])}",
+                                        textAlign: TextAlign.start,
+                                        style: AppTxtStyles
+                                            .size10Weight400TxtStyle
+                                            .copyWith(fontSize: 12.sp),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    "Quantity: ${_allUserHoldings[position].quantity ?? "null"}",
-                                    textAlign: TextAlign.start,
-                                    style: AppTxtStyles.size10Weight400TxtStyle
-                                        .copyWith(fontSize: 12.sp),
-                                  ),
-                                  SizedBox(
-                                    height: 3.h,
-                                  ),
-                                  Text(
-                                    "Current Price: \$ ${_allUserHoldings[position].quantity ?? "null"}",
-                                    textAlign: TextAlign.start,
-                                    style: AppTxtStyles.size10Weight400TxtStyle
-                                        .copyWith(fontSize: 12.sp),
-                                  ),
-                                  SizedBox(
-                                    height: 3.h,
-                                  ),
-                                  Text(
-                                    "Total: \$ ${(_allUserHoldings[position].quantity! * _allUserHoldings[position].quantity!)}",
-                                    textAlign: TextAlign.start,
-                                    style: AppTxtStyles.size10Weight400TxtStyle
-                                        .copyWith(fontSize: 12.sp),
-                                  ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ));
                     },

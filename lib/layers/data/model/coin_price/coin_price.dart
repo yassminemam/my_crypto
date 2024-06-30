@@ -1,15 +1,10 @@
-class CoinPrice {
-  double? uSD;
+class CoinPriceResponse {
+  Map<String, dynamic>? prices;
 
-  CoinPrice({this.uSD});
+  CoinPriceResponse({this.prices});
 
-  CoinPrice.fromJson(Map<String, dynamic> json) {
-    uSD = json['USD'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['USD'] = this.uSD;
-    return data;
+  CoinPriceResponse.fromJson(Map<String, dynamic> json) {
+    prices =
+        Map<String, dynamic>.fromEntries(json.entries);
   }
 }

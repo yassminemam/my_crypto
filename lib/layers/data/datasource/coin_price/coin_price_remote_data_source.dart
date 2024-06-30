@@ -8,25 +8,25 @@ import '../../model/coin_price/coin_price.dart';
 import '../../model/coins_list/coins_list_response_model.dart';
 
 abstract class CoinPriceRemoteDataSource {
-  Future<CoinPrice?> getCoinPrice({required String coinSymbol});
+  Future<CoinPriceResponse?> getCoinPrice({required List<String> coinSymbol});
 }
 
-class CoinsRemoteDataSourceImpl implements CoinPriceRemoteDataSource {
+class CoinPriceRemoteDataSourceImpl implements CoinPriceRemoteDataSource {
   final Dio dio;
 
-  CoinsRemoteDataSourceImpl({
+  CoinPriceRemoteDataSourceImpl({
     required this.dio,
   });
 
   @override
-  Future<CoinPrice?> getCoinPrice({required String coinSymbol}) async {
+  Future<CoinPriceResponse?> getCoinPrice({required List<String> coinSymbol}) async {
     try {
-      Map<String, dynamic>? queryParams = {"fsym": coinSymbol, "tsyms":"USD"};
+      Map<String, dynamic>? queryParams = {"fsym": "USD", "tsyms": coinSymbol};
       var response =
-          await dio.get(EndPoints.getCoinsList, queryParameters: queryParams);
+          await dio.get(EndPoints.getPrice, queryParameters: queryParams);
       if (response.statusCode == 200) {
-        CoinPrice coinPriceResponseModel =
-            CoinPrice.fromJson(response.data);
+        CoinPriceResponse coinPriceResponseModel =
+            CoinPriceResponse.fromJson(response.data);
         return coinPriceResponseModel;
       } else if (response.data == null &&
           response.data["Response"] == "Success") {
