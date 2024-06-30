@@ -6,28 +6,43 @@ abstract class Failure extends Equatable {
 
   String get errorMessage => _errorMessage;
 
-  Failure(this._errorMessage);
+  const Failure(this._errorMessage);
 }
 
 const String messageConnectionFailure = AppStrings.errorNoInternetConnection;
 const String messageCacheFailure = AppStrings.errorCanNotAccessCache;
 
-class ServerFailure extends Failure {
-  final String error;
+class AppServerError extends Failure {
+  String? response;
+  String? message;
 
-  ServerFailure(this.error) : super(error);
+  AppServerError(
+    this.message, {
+    this.response,
+  }) : super(message ?? AppStrings.errorUnknownServerError);
+
+  AppServerError.fromJson(Map<String, dynamic> json) : super(json['Message']) {
+    response = json['Response'];
+    message = json['Message'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Response'] = response;
+    data['Message'] = message;
+    return data;
+  }
 
   @override
-  List<Object> get props => [error];
+  List<Object?> get props => [message];
 
   @override
   String toString() {
-    return 'ServerFailure{errorMessage: $error}';
+    return 'Server Error: $message';
   }
 }
 
 class CacheFailure extends Failure {
-
   CacheFailure() : super(messageCacheFailure);
 
   @override

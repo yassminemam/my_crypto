@@ -3,7 +3,6 @@ import 'package:my_crypto/layers/data/datasource/coin_price/coin_price_remote_da
 import 'package:my_crypto/layers/data/model/coin_price/coin_price.dart';
 import 'package:my_crypto/layers/domain/repo/coin_price/coin_price_repo.dart';
 import '../../../../core/constants/strings/app_strings.dart';
-import '../../../../core/error/exception.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/network_info.dart';
 
@@ -28,11 +27,11 @@ class CoinPriceRepositoryImpl implements CoinPriceRepository {
         //Or right as CoinPriceResponse?
         // in case of response was null data from server we return ServerFailure
         return response == null
-            ? Left(ServerFailure(AppStrings.errorDataFromServerIsNullError))
+            ? Left(AppServerError(AppStrings.errorDataFromServerIsNullError))
             : Right(response);
-      } on AppException catch (exp) {
+      } on AppServerError catch (exp) {
         //catch ServerFailure
-        return Left(ServerFailure(exp.errorMessage));
+        return Left(AppServerError(exp.errorMessage));
       }
     } else {
       //in case of no connection error

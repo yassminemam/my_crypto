@@ -20,6 +20,7 @@ class AppStrings {
   static const addYourQuantity = "Add your quantity";
   static const hintRequired = "required *";
   static const pleaseEnterQuantityGreaterThanZero = "Please Enter Quantity Greater Than Zero";
+  static const loadingData = "Loading your data please wait.\n If you didn't add holdings yet please do.";
 
   //config strings
   static const userHoldingsBox = 'userHoldings';

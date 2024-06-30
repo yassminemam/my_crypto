@@ -138,6 +138,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                             .copyWith(color: Colors.red),
                       ));
                     }
+                    if(coinsPricesMap.isEmpty)
+                      {
+                        return const Center(child: Text(AppStrings.loadingData, textAlign: TextAlign.center,));
+                      }
                     return const Center(child: CircularProgressIndicator());
                   }
                   return SizedBox(

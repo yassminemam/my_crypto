@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/constants/strings/app_strings.dart';
-import '../../../../core/error/exception.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../domain/repo/coins_list/coins_repo.dart';
@@ -21,17 +20,16 @@ class CoinsRepositoryImpl implements CoinsRepository {
     var isConnected = await networkInfo.isConnected;
     if (isConnected) {
       try {
-        var response =
-            await coinsRemoteDataSource.getCoinsList();
+        var response = await coinsRemoteDataSource.getCoinsList();
         // the response returned from the data souse Either left as Failure
         //Or right as CoinsListResponse?
         // in case of response was null data from server we return ServerFailure
         return response == null
-            ? Left(ServerFailure(AppStrings.errorDataFromServerIsNullError))
+            ? Left(AppServerError(AppStrings.errorDataFromServerIsNullError))
             : Right(response);
-      } on AppException catch (exp) {
+      } on AppServerError catch (exp) {
         //catch ServerFailure
-        return Left(ServerFailure(exp.errorMessage));
+        return Left(AppServerError(exp.errorMessage));
       }
     } else {
       //in case of no connection error
