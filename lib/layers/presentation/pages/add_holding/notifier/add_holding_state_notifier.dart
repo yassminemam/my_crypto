@@ -50,8 +50,4 @@ class AddHoldingStateNotifier extends StateNotifier<AddHoldingPageState> {
         userNewHolding: newUserHolding,
         coinsListResponse: state.coinsListResponse);
   }
-
-  UserHolding getUserNewHolding() {
-    return state.userNewHolding!;
-  }
 }

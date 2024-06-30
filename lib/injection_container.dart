@@ -17,7 +17,7 @@ Future<void> init() async {
    * ! Core
    */
   sl.registerLazySingleton<DataConnectionChecker>(
-      () => DataConnectionChecker());
+          () => DataConnectionChecker());
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
   /**
@@ -46,14 +46,13 @@ Future<void> init() async {
     return collection;
   });
   await sl.isReady<BoxCollection>();
-
   /**
    * ! Layers
    */
   // Data Source
   sl.registerLazySingleton<CoinsRemoteDataSource>(
-      () => CoinsRemoteDataSourceImpl(dio: sl()));
+          () => CoinsRemoteDataSourceImpl(dio: sl()));
 
   sl.registerLazySingleton<CoinPriceRemoteDataSource>(
-      () => CoinPriceRemoteDataSourceImpl(dio: sl()));
+          () => CoinPriceRemoteDataSourceImpl(dio: sl()));
 }

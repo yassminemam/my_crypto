@@ -63,7 +63,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
                               AddHoldingPageStatus.failure) {
                             return Center(
                                 child: Text(
-                              "data",
+                                addHoldingProv.error?.errorMessage ?? "Error",
                               style: AppTxtStyles.btnTxtStyle
                                   .copyWith(color: Colors.red),
                             ));

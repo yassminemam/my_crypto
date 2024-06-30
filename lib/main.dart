@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'core/constants/colors/app_colors.dart';
 import 'injection_container.dart' as di;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
     values: FlavorValues(baseUrl: BaseUrlConfig().baseUrlDevelopment),
   );
   await di.init();
+  Hive.openBox('userHoldings');
   await ScreenUtil.ensureScreenSize();
   runApp(const ProviderScope(child: MyApp()));
 }
