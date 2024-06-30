@@ -29,6 +29,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _editHoldingQunCon = TextEditingController();
   Timer? timer;
 
+
+  //if the users don't want to wait 10 seconds for the update
+  // they can pull to refresh the prices
   Future<void> _onRefresh() async {
     final Completer<void> completer = Completer<void>();
     await ref
@@ -49,9 +52,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void initState() {
+    //calling the home provider to fetchCoinsPrices on screen init
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(homePageStateProvider.notifier).fetchCoinsPrices();
     });
+    //periodic timer calls the api of prices every 10 seconds and refreshes the screen
     timer = Timer.periodic(
         const Duration(seconds: 10),
         (Timer t) async =>

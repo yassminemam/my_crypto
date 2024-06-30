@@ -32,6 +32,7 @@ class _AddHoldingPageState extends ConsumerState<AddHoldingPage> {
   @override
   void initState() {
     super.initState();
+    //calling the addHolding Provider to fetchCoinsList on screen init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(addHoldingPageStateProvider.notifier).fetchCoinsList();
     });

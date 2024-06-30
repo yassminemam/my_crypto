@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:my_crypto/layers/data/model/coin_price/coin_price.dart';
 import '../../../../../core/error/failure.dart';
 
+//enum for the most generic states of the home page provider
 enum HomePageStatus { initial, loading, success, failure }
 
 class HomePageState extends Equatable {
@@ -16,6 +17,7 @@ class HomePageState extends Equatable {
   final Failure? error;
   final List<String>? coinsSymbols;
 
+  //to update the state we use the copyWith fun
   HomePageState copyWith(
       {HomePageStatus? status,
         CoinPriceResponse? coinPriceResponse,

@@ -3,6 +3,7 @@ import 'package:my_crypto/layers/data/model/user_holding/user_holding.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../data/model/coins_list/coins_list_response_model.dart';
 
+//enum for the most generic states of the AddHolding page provider
 enum AddHoldingPageStatus { initial, loading, success, failure }
 
 class AddHoldingPageState extends Equatable {
@@ -16,7 +17,7 @@ class AddHoldingPageState extends Equatable {
   final CoinsListResponse? coinsListResponse;
   final Failure? error;
   final UserHolding? userNewHolding;
-
+  //to update the state we use the copyWith fun
   AddHoldingPageState copyWith(
       {AddHoldingPageStatus? status,
       CoinsListResponse? coinsListResponse,

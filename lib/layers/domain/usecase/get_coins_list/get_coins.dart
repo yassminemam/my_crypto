@@ -4,6 +4,7 @@ import '../../../../core/usecase/usecase.dart';
 import '../../../data/model/coins_list/coins_list_response_model.dart';
 import '../../repo/coins_list/coins_repo.dart';
 
+//the useCase will return CoinsListResponse? and will call with NoParams
 class GetCoins implements UseCase<CoinsListResponse?, NoParams> {
   final CoinsRepository coinsRepository;
 

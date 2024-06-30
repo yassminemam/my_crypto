@@ -23,13 +23,18 @@ class CoinsRepositoryImpl implements CoinsRepository {
       try {
         var response =
             await coinsRemoteDataSource.getCoinsList();
+        // the response returned from the data souse Either left as Failure
+        //Or right as CoinsListResponse?
+        // in case of response was null data from server we return ServerFailure
         return response == null
             ? Left(ServerFailure(AppStrings.errorDataFromServerIsNullError))
             : Right(response);
       } on AppException catch (exp) {
+        //catch ServerFailure
         return Left(ServerFailure(exp.errorMessage));
       }
     } else {
+      //in case of no connection error
       return Left(ConnectionFailure());
     }
   }

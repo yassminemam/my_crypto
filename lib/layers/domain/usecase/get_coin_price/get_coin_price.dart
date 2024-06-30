@@ -1,10 +1,11 @@
 import 'package:dartz/dartz.dart';
-
 import '../../../../core/error/failure.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../data/model/coin_price/coin_price.dart';
 import '../../repo/coin_price/coin_price_repo.dart';
 
+//the useCase will return CoinPriceResponse?
+// and will call with List<String> which is coinsSymbolsList
 class GetCoinPrice implements UseCase<CoinPriceResponse?, List<String>> {
   final CoinPriceRepository coinPriceRepository;
 

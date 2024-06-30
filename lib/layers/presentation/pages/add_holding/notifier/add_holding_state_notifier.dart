@@ -7,6 +7,7 @@ import '../../../../domain/usecase/get_coins_list/get_coins.dart';
 import '../../../providers.dart';
 import 'add_holding_state.dart';
 
+//init of the addHoldingPageStateProvider
 final addHoldingPageStateProvider =
     StateNotifierProvider<AddHoldingStateNotifier, AddHoldingPageState>(
   (ref) => AddHoldingStateNotifier(
@@ -20,17 +21,22 @@ class AddHoldingStateNotifier extends StateNotifier<AddHoldingPageState> {
   })  : _getAllCoins = getAllCoins,
         super(const AddHoldingPageState());
 
+  //the useCase of getAllCoins list
   final GetCoins _getAllCoins;
 
   Future<void> fetchCoinsList() async {
+    //update the state with loading
     state = state.copyWith(status: AddHoldingPageStatus.loading);
+    //fetchCoinsList using the useCase
     await _getAllCoins.call(NoParams()).then((result) {
       result.fold((l) {
+        //in case of failure l means left of Either which is Failure
         state = state.copyWith(
           status: AddHoldingPageStatus.failure,
           error: l,
         );
       }, (r) {
+        //in case of success r means right of Either which is CoinsListResponse
         state = state.copyWith(
           status: AddHoldingPageStatus.success,
           coinsListResponse: r,
