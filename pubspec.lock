@@ -600,14 +600,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.5.1"
-  riverpod_messages:
-    dependency: "direct main"
-    description:
-      name: riverpod_messages
-      sha256: "50f6b7a9910a5e0d60df1ac13f2a194ab9100a907856ffbeae83984968f892f4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   shelf:
     dependency: transitive
     description:
